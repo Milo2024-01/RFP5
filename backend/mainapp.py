@@ -139,6 +139,17 @@ async def analyze(
 async def health_check():
     return {"status": "OK", "message": "Rice Field Health Analyzer API is running"}
 
+# HEAD endpoint to prevent 405 logs
+@app.head("/")
+async def head_root():
+    return {}
+
+# Optional dummy favicon to prevent 404 logs
+@app.get("/favicon.ico")
+async def favicon():
+    return ""
+
+
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
