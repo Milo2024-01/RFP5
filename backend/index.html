@@ -470,454 +470,453 @@
         </div>
     </div>
 
-   <script>
-    // ⚠️ IMPORTANT: UPDATE THIS URL TO MATCH YOUR DEPLOYED BACKEND
-    // Replace with your actual Render backend URL after deployment
-    const API_BASE_URL = "https://rfp5.onrender.com";
-    
-    let accessToken = null;
-    let healthChart = null;
-    let historicalChart = null;
-    
-    // Initialize Charts
-    function initCharts() {
-        // Health Distribution Chart
-        const healthCtx = document.getElementById('healthChart').getContext('2d');
-        healthChart = new Chart(healthCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Healthy', 'Medium', 'Unhealthy'],
-                datasets: [{
-                    data: [0, 0, 0],
-                    backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
-                    borderWidth: 0,
-                    hoverOffset: 15
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
+    <script>
+        // Use your Render backend URL
+        const API_BASE_URL = "https://rfp5.onrender.com";
+        
+        let accessToken = null;
+        let healthChart = null;
+        let historicalChart = null;
+        
+        // Initialize Charts
+        function initCharts() {
+            // Health Distribution Chart
+            const healthCtx = document.getElementById('healthChart').getContext('2d');
+            healthChart = new Chart(healthCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Healthy', 'Medium', 'Unhealthy'],
+                    datasets: [{
+                        data: [0, 0, 0],
+                        backgroundColor: ['#28a745', '#ffc107', '#dc3545'],
+                        borderWidth: 0,
+                        hoverOffset: 15
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    size: 13
+                                },
+                                padding: 20
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Field Health Distribution',
                             font: {
-                                size: 13
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14
                             },
-                            padding: 20
-                        }
-                    },
-                    title: {
-                        display: true,
-                        text: 'Field Health Distribution',
-                        font: {
-                            size: 16,
-                            weight: 'bold'
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                        padding: 12,
-                        titleFont: {
-                            size: 14
-                        },
-                        bodyFont: {
-                            size: 13
-                        }
-                    }
-                },
-                cutout: '70%',
-                animation: {
-                    animateScale: true,
-                    animateRotate: true
-                }
-            }
-        });
-        
-        // Historical Yield Chart
-        const historicalCtx = document.getElementById('historicalChart').getContext('2d');
-        historicalChart = new Chart(historicalCtx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [
-                    {
-                        label: 'Predicted Yield',
-                        data: [],
-                        borderColor: '#28a745',
-                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
-                        borderWidth: 3,
-                        pointRadius: 5,
-                        pointBackgroundColor: '#28a745',
-                        tension: 0.3,
-                        fill: true
-                    },
-                    {
-                        label: 'Actual Yield',
-                        data: [],
-                        borderColor: '#0dcaf0',
-                        backgroundColor: 'rgba(13, 202, 240, 0.1)',
-                        borderWidth: 3,
-                        pointRadius: 5,
-                        pointBackgroundColor: '#0dcaf0',
-                        borderDash: [5, 5],
-                        tension: 0.3,
-                        fill: true
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                        labels: {
-                            font: {
+                            bodyFont: {
                                 size: 13
                             }
                         }
                     },
-                    title: {
-                        display: true,
-                        text: 'Yield Prediction Trends',
-                        font: {
-                            size: 16,
-                            weight: 'bold'
-                        }
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                        padding: 12,
-                        titleFont: {
-                            size: 14
+                    cutout: '70%',
+                    animation: {
+                        animateScale: true,
+                        animateRotate: true
+                    }
+                }
+            });
+            
+            // Historical Yield Chart
+            const historicalCtx = document.getElementById('historicalChart').getContext('2d');
+            historicalChart = new Chart(historicalCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'Predicted Yield',
+                            data: [],
+                            borderColor: '#28a745',
+                            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#28a745',
+                            tension: 0.3,
+                            fill: true
                         },
+                        {
+                            label: 'Actual Yield',
+                            data: [],
+                            borderColor: '#0dcaf0',
+                            backgroundColor: 'rgba(13, 202, 240, 0.1)',
+                            borderWidth: 3,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#0dcaf0',
+                            borderDash: [5, 5],
+                            tension: 0.3,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 13
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Yield Prediction Trends',
+                            font: {
+                                size: 16,
+                                weight: 'bold'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgara(0, 0, 0, 0.7)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14
+                            },
                             bodyFont: {
-                            size: 13
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        grid: {
-                            display: false
-                        },
-                        title: {
-                            display: true,
-                            text: 'Date',
-                            font: {
-                                size: 14,
-                                weight: 'bold'
+                                size: 13
                             }
                         }
                     },
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.05)'
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Date',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
                         },
-                        title: {
-                            display: true,
-                            text: 'Yield (kg)',
-                            font: {
-                                size: 14,
-                                weight: 'bold'
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            },
+                            title: {
+                                display: true,
+                                text: 'Yield (kg)',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
                             }
                         }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    hover: {
+                        mode: 'index',
+                        intersect: false
                     }
-                },
-                interaction: {
-                    mode: 'index',
-                    intersect: false
-                },
-                hover: {
-                    mode: 'index',
-                    intersect: false
                 }
-            }
-        });
-        
-        // Generate sample historical data
-        generateHistoricalData();
-    }
-    
-    // Generate sample historical data for the last 5 days
-    function generateHistoricalData() {
-        const dates = [];
-        const predictedData = [];
-        const actualData = [];
-        
-        // Generate data for the last 5 days
-        for (let i = 4; i >= 0; i--) {
-            const date = new Date();
-            date.setDate(date.getDate() - i);
-            
-            // Format date as MM/DD/YYYY
-            const formattedDate = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
-            dates.push(formattedDate);
-            
-            // Random predicted yield between 700 and 1200 kg
-            const predictedYield = Math.floor(Math.random() * 501) + 700;
-            predictedData.push(predictedYield);
-            
-            // For demonstration, set actual yield to predicted yield ±20 kg
-            const actualYield = predictedYield + (Math.floor(Math.random() * 41) - 20);
-            actualData.push(actualYield);
-        }
-        
-        // Update the chart with generated data
-        historicalChart.data.labels = dates;
-        historicalChart.data.datasets[0].data = predictedData;
-        historicalChart.data.datasets[1].data = actualData;
-        historicalChart.update();
-    }
-    
-    // Update chart with health data
-    function updateChart(healthy, medium, unhealthy) {
-        if (!healthChart) return;
-        
-        healthChart.data.datasets[0].data = [healthy, medium, unhealthy];
-        healthChart.update();
-    }
-    
-    // Login function
-    async function login() {
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("password").value;
-        const loginButton = document.getElementById("loginSpinner");
-        const loginAlert = document.getElementById("loginAlert");
-        
-        if (!username || !password) {
-            showLoginAlert("Please enter both username and password");
-            return;
-        }
-        
-        try {
-            loginButton.style.display = "inline-block";
-            
-            const formData = new URLSearchParams();
-            formData.append("username", username);
-            formData.append("password", password);
-            formData.append("grant_type", "password");
-            
-            const response = await fetch(`${API_BASE_URL}/token`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                body: formData
             });
             
-            if (!response.ok) {
-                throw new Error("Login failed. Please check your credentials.");
-            }
-            
-            const data = await response.json();
-            accessToken = data.access_token;
-            
-            // Show main content
-            document.getElementById("loginPage").style.display = "none";
-            document.getElementById("appContent").style.display = "block";
-            
-            // Initialize charts after login
-            initCharts();
-            
-        } catch (error) {
-            showLoginAlert(error.message);
-        } finally {
-            loginButton.style.display = "none";
-        }
-    }
-    
-    // Logout function
-    function logout() {
-        accessToken = null;
-        document.getElementById("loginPage").style.display = "block";
-        document.getElementById("appContent").style.display = "none";
-        document.getElementById("results").classList.add("d-none");
-    }
-    
-    function showLoginAlert(message) {
-        const alert = document.getElementById("loginAlert");
-        document.getElementById("loginAlertMessage").textContent = message;
-        alert.style.display = "block";
-        
-        setTimeout(() => {
-            alert.style.display = "none";
-        }, 5000);
-    }
-    
-    function showAlert(message) {
-        const alert = document.getElementById("validationAlert");
-        document.getElementById("alertMessage").textContent = message;
-        alert.style.display = "block";
-        
-        setTimeout(() => {
-            alert.style.display = "none";
-        }, 5000);
-    }
-    
-    // Record actual yield
-    function recordActualYield() {
-        const actualYield = document.getElementById("actualYieldInput").value;
-        const harvestDate = document.getElementById("harvestDate").value;
-        const statusElement = document.getElementById("yieldRecordStatus");
-        
-        if (!actualYield || !harvestDate) {
-            showAlert("Please enter both yield value and harvest date");
-            return;
+            // Generate sample historical data
+            generateHistoricalData();
         }
         
-        // For demonstration, we'll just show a success message
-        statusElement.classList.remove("d-none");
-        
-        // Clear inputs
-        document.getElementById("actualYieldInput").value = "";
-        document.getElementById("harvestDate").value = "";
-        
-        // Hide status after 3 seconds
-        setTimeout(() => {
-            statusElement.classList.add("d-none");
-        }, 3000);
-    }
-    
-    async function analyze() {
-        const file = document.getElementById("imageInput").files[0];
-        const width = parseFloat(document.getElementById("fieldWidth").value);
-        const height = parseFloat(document.getElementById("fieldHeight").value);
-        const location = document.getElementById("location").value;
-        const FERTILIZER_RATE = 50;
-        
-        document.getElementById("validationAlert").style.display = "none";
-        const analyzeButton = document.getElementById("analyzeButton");
-        const analyzeSpinner = document.getElementById("analyzeSpinner");
-        
-        if (!file) {
-            showAlert("Please upload an image first");
-            return;
-        }
-        
-        const validTypes = ["image/jpeg", "image/jpg", "image/png"];
-        if (!validTypes.includes(file.type.toLowerCase())) {
-            showAlert("Only JPG, JPEG, and PNG files are allowed");
-            return;
-        }
-        
-        if (isNaN(width) || width <= 0 || isNaN(height) || height <= 0) {
-            showAlert("Please enter valid width and height values");
-            return;
-        }
-
-        try {
-            analyzeButton.disabled = true;
-            analyzeSpinner.style.display = "inline-block";
+        // Generate sample historical data for the last 5 days
+        function generateHistoricalData() {
+            const dates = [];
+            const predictedData = [];
+            const actualData = [];
             
-            const formData = new FormData();
-            formData.append("image", file);
-            formData.append("width", width);
-            formData.append("height", height);
-            if (location) formData.append("location", location);
-
-            const response = await fetch(`${API_BASE_URL}/analyze`, {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${accessToken}`
-                },
-                body: formData
-            });
-
-            if (!response.ok) {
-                if (response.status === 401) {
-                    throw new Error("Authentication failed. Please login again.");
-                }
+            // Generate data for the last 5 days
+            for (let i = 4; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
                 
-                let errorMsg = "Analysis failed";
-                try {
-                    const errorData = await response.json();
-                    errorMsg = errorData.error || errorData.message || errorMsg;
-                } catch (e) {
-                    errorMsg = `${response.status} ${response.statusText}`;
-                }
-                throw new Error(errorMsg);
+                // Format date as MM/DD/YYYY
+                const formattedDate = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+                dates.push(formattedDate);
+                
+                // Random predicted yield between 700 and 1200 kg
+                const predictedYield = Math.floor(Math.random() * 501) + 700;
+                predictedData.push(predictedYield);
+                
+                // For demonstration, set actual yield to predicted yield ±20 kg
+                const actualYield = predictedYield + (Math.floor(Math.random() * 41) - 20);
+                actualData.push(actualYield);
             }
-
-            const data = await response.json();
             
-            if (data.error) {
-                showAlert(data.error);
+            // Update the chart with generated data
+            historicalChart.data.labels = dates;
+            historicalChart.data.datasets[0].data = predictedData;
+            historicalChart.data.datasets[1].data = actualData;
+            historicalChart.update();
+        }
+        
+        // Update chart with health data
+        function updateChart(healthy, medium, unhealthy) {
+            if (!healthChart) return;
+            
+            healthChart.data.datasets[0].data = [healthy, medium, unhealthy];
+            healthChart.update();
+        }
+        
+        // Login function
+        async function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const loginButton = document.getElementById("loginSpinner");
+            const loginAlert = document.getElementById("loginAlert");
+            
+            if (!username || !password) {
+                showLoginAlert("Please enter both username and password");
                 return;
             }
             
-            document.getElementById("results").classList.remove("d-none");
-            document.getElementById("preview").src = URL.createObjectURL(file);
-            document.getElementById("resultImg").src = `data:image/png;base64,${data.processed_image}`;
-
-            const unhealthyArea = data.stats.unhealthy;
-            const fertilizerGrams = unhealthyArea * FERTILIZER_RATE;
-            const fertilizerKg = fertilizerGrams / 1000;
-            const totalArea = width * height;
-
-            document.getElementById("healthyArea").textContent = `${data.stats.healthy.toFixed(2)}m²`;
-            document.getElementById("healthyPercent").textContent = 
-                `${((data.stats.healthy/totalArea)*100).toFixed(1)}%`;
-            document.getElementById("healthyBar").style.width = `${(data.stats.healthy/totalArea)*100}%`;
-            
-            document.getElementById("mediumArea").textContent = `${data.stats.medium.toFixed(2)}m²`;
-            document.getElementById("mediumPercent").textContent = 
-                `${((data.stats.medium/totalArea)*100).toFixed(1)}%`;
-            document.getElementById("mediumBar").style.width = `${(data.stats.medium/totalArea)*100}%`;
-            
-            document.getElementById("unhealthyArea").textContent = `${unhealthyArea.toFixed(2)}m²`;
-            document.getElementById("unhealthyPercent").textContent = 
-                `${((unhealthyArea/totalArea)*100).toFixed(1)}%`;
-            document.getElementById("unhealthyBar").style.width = `${(unhealthyArea/totalArea)*100}%`;
-
-            document.getElementById("totalYield").textContent = `${data.estimated_yield.toFixed(2)} kg`;
-            document.getElementById("totalFertilizer").textContent = 
-                `${fertilizerGrams.toFixed(1)}g (${fertilizerKg.toFixed(2)}kg)`;
-            
-            // Update chart
-            updateChart(
-                (data.stats.healthy/totalArea)*100,
-                (data.stats.medium/totalArea)*100,
-                (unhealthyArea/totalArea)*100
-            );
-
-        } catch (error) {
-            showAlert(`Error: ${error.message}`);
-            if (error.message.includes("Authentication failed")) {
-                logout();
+            try {
+                loginButton.style.display = "inline-block";
+                
+                const formData = new URLSearchParams();
+                formData.append("username", username);
+                formData.append("password", password);
+                formData.append("grant_type", "password");
+                
+                const response = await fetch(`${API_BASE_URL}/token`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error("Login failed. Please check your credentials.");
+                }
+                
+                const data = await response.json();
+                accessToken = data.access_token;
+                
+                // Show main content
+                document.getElementById("loginPage").style.display = "none";
+                document.getElementById("appContent").style.display = "block";
+                
+                // Initialize charts after login
+                initCharts();
+                
+            } catch (error) {
+                showLoginAlert(error.message);
+            } finally {
+                loginButton.style.display = "none";
             }
-        } finally {
-            analyzeButton.disabled = false;
-            analyzeSpinner.style.display = "none";
         }
-    }
-    
-    document.getElementById("imageInput").addEventListener("change", function(e) {
-        const file = e.target.files[0];
-        const validTypes = ["image/jpeg", "image/jpg", "image/png"];
         
-        if (file && !validTypes.includes(file.type.toLowerCase())) {
-            showAlert("Only JPG, JPEG, and PNG files are allowed");
-            e.target.value = "";
+        // Logout function
+        function logout() {
+            accessToken = null;
+            document.getElementById("loginPage").style.display = "block";
+            document.getElementById("appContent").style.display = "none";
+            document.getElementById("results").classList.add("d-none");
         }
-    });
-    
-    // Set default date to today for the harvest date input
-    document.addEventListener('DOMContentLoaded', function() {
-        const today = new Date();
-        const formattedDate = today.toISOString().split('T')[0];
-        document.getElementById('harvestDate').value = formattedDate;
         
-        // Check if we have a stored token
-        if (localStorage.getItem('accessToken')) {
-            accessToken = localStorage.getItem('accessToken');
-            document.getElementById("loginPage").style.display = "none";
-            document.getElementById("appContent").style.display = "block";
-            initCharts();
+        function showLoginAlert(message) {
+            const alert = document.getElementById("loginAlert");
+            document.getElementById("loginAlertMessage").textContent = message;
+            alert.style.display = "block";
+            
+            setTimeout(() => {
+                alert.style.display = "none";
+            }, 5000);
         }
-    });
-</script>
+        
+        function showAlert(message) {
+            const alert = document.getElementById("validationAlert");
+            document.getElementById("alertMessage").textContent = message;
+            alert.style.display = "block";
+            
+            setTimeout(() => {
+                alert.style.display = "none";
+            }, 5000);
+        }
+        
+        // Record actual yield
+        function recordActualYield() {
+            const actualYield = document.getElementById("actualYieldInput").value;
+            const harvestDate = document.getElementById("harvestDate").value;
+            const statusElement = document.getElementById("yieldRecordStatus");
+            
+            if (!actualYield || !harvestDate) {
+                showAlert("Please enter both yield value and harvest date");
+                return;
+            }
+            
+            // For demonstration, we'll just show a success message
+            statusElement.classList.remove("d-none");
+            
+            // Clear inputs
+            document.getElementById("actualYieldInput").value = "";
+            document.getElementById("harvestDate").value = "";
+            
+            // Hide status after 3 seconds
+            setTimeout(() => {
+                statusElement.classList.add("d-none");
+            }, 3000);
+        }
+        
+        async function analyze() {
+            const file = document.getElementById("imageInput").files[0];
+            const width = parseFloat(document.getElementById("fieldWidth").value);
+            const height = parseFloat(document.getElementById("fieldHeight").value);
+            const location = document.getElementById("location").value;
+            const FERTILIZER_RATE = 50;
+            
+            document.getElementById("validationAlert").style.display = "none";
+            const analyzeButton = document.getElementById("analyzeButton");
+            const analyzeSpinner = document.getElementById("analyzeSpinner");
+            
+            if (!file) {
+                showAlert("Please upload an image first");
+                return;
+            }
+            
+            const validTypes = ["image/jpeg", "image/jpg", "image/png"];
+            if (!validTypes.includes(file.type.toLowerCase())) {
+                showAlert("Only JPG, JPEG, and PNG files are allowed");
+                return;
+            }
+            
+            if (isNaN(width) || width <= 0 || isNaN(height) || height <= 0) {
+                showAlert("Please enter valid width and height values");
+                return;
+            }
+
+            try {
+                analyzeButton.disabled = true;
+                analyzeSpinner.style.display = "inline-block";
+                
+                const formData = new FormData();
+                formData.append("image", file);
+                formData.append("width", width);
+                formData.append("height", height);
+                if (location) formData.append("location", location);
+
+                const response = await fetch(`${API_BASE_URL}/analyze`, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${accessToken}`
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error("Authentication failed. Please login again.");
+                    }
+                    
+                    let errorMsg = "Analysis failed";
+                    try {
+                        const errorData = await response.json();
+                        errorMsg = errorData.error || errorData.message || errorMsg;
+                    } catch (e) {
+                        errorMsg = `${response.status} ${response.statusText}`;
+                    }
+                    throw new Error(errorMsg);
+                }
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    showAlert(data.error);
+                    return;
+                }
+                
+                document.getElementById("results").classList.remove("d-none");
+                document.getElementById("preview").src = URL.createObjectURL(file);
+                document.getElementById("resultImg").src = `data:image/png;base64,${data.processed_image}`;
+
+                const unhealthyArea = data.stats.unhealthy;
+                const fertilizerGrams = unhealthyArea * FERTILIZER_RATE;
+                const fertilizerKg = fertilizerGrams / 1000;
+                const totalArea = width * height;
+
+                document.getElementById("healthyArea").textContent = `${data.stats.healthy.toFixed(2)}m²`;
+                document.getElementById("healthyPercent").textContent = 
+                    `${((data.stats.healthy/totalArea)*100).toFixed(1)}%`;
+                document.getElementById("healthyBar").style.width = `${(data.stats.healthy/totalArea)*100}%`;
+                
+                document.getElementById("mediumArea").textContent = `${data.stats.medium.toFixed(2)}m²`;
+                document.getElementById("mediumPercent").textContent = 
+                    `${((data.stats.medium/totalArea)*100).toFixed(1)}%`;
+                document.getElementById("mediumBar").style.width = `${(data.stats.medium/totalArea)*100}%`;
+                
+                document.getElementById("unhealthyArea").textContent = `${unhealthyArea.toFixed(2)}m²`;
+                document.getElementById("unhealthyPercent").textContent = 
+                    `${((unhealthyArea/totalArea)*100).toFixed(1)}%`;
+                document.getElementById("unhealthyBar").style.width = `${(unhealthyArea/totalArea)*100}%`;
+
+                document.getElementById("totalYield").textContent = `${data.estimated_yield.toFixed(2)} kg`;
+                document.getElementById("totalFertilizer").textContent = 
+                    `${fertilizerGrams.toFixed(1)}g (${fertilizerKg.toFixed(2)}kg)`;
+                
+                // Update chart
+                updateChart(
+                    (data.stats.healthy/totalArea)*100,
+                    (data.stats.medium/totalArea)*100,
+                    (unhealthyArea/totalArea)*100
+                );
+
+            } catch (error) {
+                showAlert(`Error: ${error.message}`);
+                if (error.message.includes("Authentication failed")) {
+                    logout();
+                }
+            } finally {
+                analyzeButton.disabled = false;
+                analyzeSpinner.style.display = "none";
+            }
+        }
+        
+        document.getElementById("imageInput").addEventListener("change", function(e) {
+            const file = e.target.files[0];
+            const validTypes = ["image/jpeg", "image/jpg", "image/png"];
+            
+            if (file && !validTypes.includes(file.type.toLowerCase())) {
+                showAlert("Only JPG, JPEG, and PNG files are allowed");
+                e.target.value = "";
+            }
+        });
+        
+        // Set default date to today for the harvest date input
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            document.getElementById('harvestDate').value = formattedDate;
+            
+            // Check if we have a stored token
+            if (localStorage.getItem('accessToken')) {
+                accessToken = localStorage.getItem('accessToken');
+                document.getElementById("loginPage").style.display = "none";
+                document.getElementById("appContent").style.display = "block";
+                initCharts();
+            }
+        });
+    </script>
 </body>
 </html>
