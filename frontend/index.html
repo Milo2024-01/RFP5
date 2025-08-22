@@ -219,6 +219,13 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
         
+        .compression-info {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+            display: none;
+        }
+        
         @media (max-width: 768px) {
             .container {
                 padding: 1rem;
@@ -322,6 +329,9 @@
                             <label for="imageInput">Upload Field Image</label>
                             <input type="file" id="imageInput" class="form-control" accept=".jpg,.jpeg,.png">
                             <div class="form-text mt-2">Only JPG, JPEG, and PNG files are accepted</div>
+                            <div class="compression-info" id="compressionInfo">
+                                <i class="bi bi-info-circle"></i> Image will be compressed to reduce server load
+                            </div>
                         </div>
                     </div>
                     <div class="col-md-12 text-center">
@@ -586,7 +596,7 @@
                             }
                         },
                         tooltip: {
-                            backgroundColor: 'rgara(0, 0, 0, 0.7)',
+                            backgroundColor: 'rgba(0, 0, 0, 0.7)',
                             padding: 12,
                             titleFont: {
                                 size: 14
@@ -677,6 +687,44 @@
             
             healthChart.data.datasets[0].data = [healthy, medium, unhealthy];
             healthChart.update();
+        }
+        
+        // Client-side image compression
+        function compressImage(file, maxWidth = 1024, quality = 0.8) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        // Calculate new dimensions
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        canvas.toBlob(blob => {
+                            resolve(new File([blob], file.name, {
+                                type: 'image/jpeg',
+                                lastModified: Date.now()
+                            }));
+                        }, 'image/jpeg', quality);
+                    };
+                    img.onerror = reject;
+                    img.src = e.target.result;
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
         }
         
         // Login function
@@ -811,8 +859,11 @@
                 analyzeButton.disabled = true;
                 analyzeSpinner.style.display = "inline-block";
                 
+                // Compress image before uploading
+                const compressedFile = await compressImage(file);
+                
                 const formData = new FormData();
-                formData.append("image", file);
+                formData.append("image", compressedFile);
                 formData.append("width", width);
                 formData.append("height", height);
                 if (location) formData.append("location", location);
@@ -896,10 +947,18 @@
         document.getElementById("imageInput").addEventListener("change", function(e) {
             const file = e.target.files[0];
             const validTypes = ["image/jpeg", "image/jpg", "image/png"];
+            const compressionInfo = document.getElementById("compressionInfo");
             
-            if (file && !validTypes.includes(file.type.toLowerCase())) {
-                showAlert("Only JPG, JPEG, and PNG files are allowed");
-                e.target.value = "";
+            if (file) {
+                compressionInfo.style.display = "block";
+                
+                if (!validTypes.includes(file.type.toLowerCase())) {
+                    showAlert("Only JPG, JPEG, and PNG files are allowed");
+                    e.target.value = "";
+                    compressionInfo.style.display = "none";
+                }
+            } else {
+                compressionInfo.style.display = "none";
             }
         });
         

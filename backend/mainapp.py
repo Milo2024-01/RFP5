@@ -8,6 +8,7 @@ import io
 from PIL import Image
 import base64
 import os
+import gc
 
 app = FastAPI()
 
@@ -54,14 +55,37 @@ def is_valid_image_type(content_type: str, filename: str) -> bool:
         return True
     return False
 
-# Fixed Image processing using Excess Green (ExG)
+def resize_image_if_needed(image: Image.Image, max_size: int = 1024) -> Image.Image:
+    """Resize image if it's larger than max_size in any dimension"""
+    width, height = image.size
+    if width > max_size or height > max_size:
+        # Calculate new dimensions while maintaining aspect ratio
+        if width > height:
+            new_width = max_size
+            new_height = int(height * (max_size / width))
+        else:
+            new_height = max_size
+            new_width = int(width * (max_size / height))
+        
+        return image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+    return image
+
+# Memory-optimized image processing
 def process_image(image_data: bytes, field_width_m: float, field_height_m: float):
     try:
-        # Load image
+        # Load image with memory optimization
         image = Image.open(io.BytesIO(image_data)).convert("RGB")
+        
+        # Resize if needed to reduce memory usage
+        image = resize_image_if_needed(image, 1024)
+        
         img_np = np.array(image)
         
-        # Convert to float32 for calculations
+        # Free memory as soon as possible
+        del image
+        gc.collect()
+        
+        # Convert to float32 for calculations (using less memory than float64)
         img_float = img_np.astype(np.float32) / 255.0
 
         # Validate green coverage
@@ -70,6 +94,11 @@ def process_image(image_data: bytes, field_width_m: float, field_height_m: float
         upper_green = np.array([90, 255, 255])
         green_mask = cv2.inRange(hsv, lower_green, upper_green)
         green_percentage = np.count_nonzero(green_mask) / (img_np.shape[0]*img_np.shape[1]) * 100
+        
+        # Free memory
+        del hsv, green_mask
+        gc.collect()
+        
         if green_percentage < 30:
             return {"error": "Uploaded image does not appear to be a rice field."}
 
@@ -80,16 +109,24 @@ def process_image(image_data: bytes, field_width_m: float, field_height_m: float
         exg = 2*G - R - B
         exg_norm = (exg - exg.min()) / (exg.max() - exg.min() + 1e-6)
 
-        # Threshold masks
-        mask_healthy = exg_norm > 0.6
-        mask_medium = (exg_norm <= 0.6) & (exg_norm > 0.3)
-        mask_unhealthy = exg_norm <= 0.3
+        # Free memory
+        del R, G, B, exg
+        gc.collect()
+
+        # Threshold masks - use uint8 to save memory
+        mask_healthy = (exg_norm > 0.6).astype(np.uint8)
+        mask_medium = ((exg_norm <= 0.6) & (exg_norm > 0.3)).astype(np.uint8)
+        mask_unhealthy = (exg_norm <= 0.3).astype(np.uint8)
+
+        # Free memory
+        del exg_norm
+        gc.collect()
 
         # Color visualization - create uint8 output image
         out_img = np.zeros_like(img_np)
-        out_img[mask_healthy] = [0, 255, 0]      # Green for healthy
-        out_img[mask_medium] = [255, 255, 0]     # Yellow for medium
-        out_img[mask_unhealthy] = [255, 0, 0]    # Red for unhealthy
+        out_img[mask_healthy.astype(bool)] = [0, 255, 0]      # Green for healthy
+        out_img[mask_medium.astype(bool)] = [255, 255, 0]     # Yellow for medium
+        out_img[mask_unhealthy.astype(bool)] = [255, 0, 0]    # Red for unhealthy
 
         # Area calculation
         total_pixels = img_np.shape[0]*img_np.shape[1]
@@ -107,6 +144,10 @@ def process_image(image_data: bytes, field_width_m: float, field_height_m: float
         buffered = io.BytesIO()
         output_pil.save(buffered, format="PNG")
         processed_image_b64 = base64.b64encode(buffered.getvalue()).decode()
+
+        # Free all memory before returning
+        del img_np, img_float, mask_healthy, mask_medium, mask_unhealthy, out_img, output_pil, buffered
+        gc.collect()
 
         return {
             "processed_image": processed_image_b64,
@@ -131,7 +172,17 @@ async def analyze(
 ):
     if not is_valid_image_type(image.content_type, image.filename):
         return JSONResponse(status_code=400, content={"error": "Only JPG, JPEG, and PNG files are allowed"})
+    
+    # Limit file size to 5MB to prevent memory issues
+    max_size = 5 * 1024 * 1024  # 5MB
     contents = await image.read()
+    
+    if len(contents) > max_size:
+        return JSONResponse(
+            status_code=400, 
+            content={"error": "Image size too large. Please upload an image smaller than 5MB."}
+        )
+    
     result = process_image(contents, width, height)
     if "error" in result:
         return JSONResponse(status_code=400, content={"error": result["error"]})
