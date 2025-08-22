@@ -54,15 +54,18 @@ def is_valid_image_type(content_type: str, filename: str) -> bool:
         return True
     return False
 
-# Image processing using Excess Green (ExG)
+# Fixed Image processing using Excess Green (ExG)
 def process_image(image_data: bytes, field_width_m: float, field_height_m: float):
     try:
         # Load image
         image = Image.open(io.BytesIO(image_data)).convert("RGB")
-        img_np = np.array(image).astype(np.float32)
+        img_np = np.array(image)
+        
+        # Convert to float32 for calculations
+        img_float = img_np.astype(np.float32) / 255.0
 
         # Validate green coverage
-        hsv = cv2.cvtColor(img_np.astype(np.uint8), cv2.COLOR_RGB2HSV)
+        hsv = cv2.cvtColor(img_np, cv2.COLOR_RGB2HSV)
         lower_green = np.array([25, 40, 40])
         upper_green = np.array([90, 255, 255])
         green_mask = cv2.inRange(hsv, lower_green, upper_green)
@@ -71,9 +74,9 @@ def process_image(image_data: bytes, field_width_m: float, field_height_m: float
             return {"error": "Uploaded image does not appear to be a rice field."}
 
         # ExG calculation
-        R = img_np[:, :, 0]
-        G = img_np[:, :, 1]
-        B = img_np[:, :, 2]
+        R = img_float[:, :, 0]
+        G = img_float[:, :, 1]
+        B = img_float[:, :, 2]
         exg = 2*G - R - B
         exg_norm = (exg - exg.min()) / (exg.max() - exg.min() + 1e-6)
 
@@ -82,11 +85,11 @@ def process_image(image_data: bytes, field_width_m: float, field_height_m: float
         mask_medium = (exg_norm <= 0.6) & (exg_norm > 0.3)
         mask_unhealthy = exg_norm <= 0.3
 
-        # Color visualization
+        # Color visualization - create uint8 output image
         out_img = np.zeros_like(img_np)
-        out_img[mask_healthy] = [0, 255, 0]
-        out_img[mask_medium] = [255, 255, 0]
-        out_img[mask_unhealthy] = [255, 0, 0]
+        out_img[mask_healthy] = [0, 255, 0]      # Green for healthy
+        out_img[mask_medium] = [255, 255, 0]     # Yellow for medium
+        out_img[mask_unhealthy] = [255, 0, 0]    # Red for unhealthy
 
         # Area calculation
         total_pixels = img_np.shape[0]*img_np.shape[1]
@@ -100,7 +103,7 @@ def process_image(image_data: bytes, field_width_m: float, field_height_m: float
         yield_kg = (healthy_area*0.8) + (medium_area*0.4) + (unhealthy_area*0.1)
 
         # Convert processed image to Base64
-        output_pil = Image.fromarray(out_img.ast(np.uint8))
+        output_pil = Image.fromarray(out_img.astype(np.uint8))
         buffered = io.BytesIO()
         output_pil.save(buffered, format="PNG")
         processed_image_b64 = base64.b64encode(buffered.getvalue()).decode()
