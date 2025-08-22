@@ -680,55 +680,53 @@
         }
         
         // Login function
-       async function login() {
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
-    const loginButton = document.getElementById("loginSpinner");
-    const loginAlert = document.getElementById("loginAlert");
-    
-    if (!username || !password) {
-        showLoginAlert("Please enter both username and password");
-        return;
-    }
-    
-    try {
-        loginButton.style.display = "inline-block";
-        
-        const formData = new URLSearchParams();
-        formData.append("username", username);
-        formData.append("password", password);
-        formData.append("grant_type", "password");
-        
-        const response = await fetch(`${API_BASE_URL}/token`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-            body: formData,
-            mode: "cors", // Explicitly set CORS mode
-            credentials: "include", // Include credentials if needed
-        });
-        
-        if (!response.ok) {
-            throw new Error("Login failed. Please check your credentials.");
+        async function login() {
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const loginButton = document.getElementById("loginSpinner");
+            const loginAlert = document.getElementById("loginAlert");
+            
+            if (!username || !password) {
+                showLoginAlert("Please enter both username and password");
+                return;
+            }
+            
+            try {
+                loginButton.style.display = "inline-block";
+                
+                const formData = new URLSearchParams();
+                formData.append("username", username);
+                formData.append("password", password);
+                formData.append("grant_type", "password");
+                
+                const response = await fetch(`${API_BASE_URL}/token`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error("Login failed. Please check your credentials.");
+                }
+                
+                const data = await response.json();
+                accessToken = data.access_token;
+                
+                // Show main content
+                document.getElementById("loginPage").style.display = "none";
+                document.getElementById("appContent").style.display = "block";
+                
+                // Initialize charts after login
+                initCharts();
+                
+            } catch (error) {
+                showLoginAlert(error.message);
+            } finally {
+                loginButton.style.display = "none";
+            }
         }
-        
-        const data = await response.json();
-        accessToken = data.access_token;
-        
-        // Show main content
-        document.getElementById("loginPage").style.display = "none";
-        document.getElementById("appContent").style.display = "block";
-        
-        // Initialize charts after login
-        initCharts();
-        
-    } catch (error) {
-        showLoginAlert(error.message);
-    } finally {
-        loginButton.style.display = "none";
-    }
-}
         
         // Logout function
         function logout() {
