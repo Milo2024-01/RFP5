@@ -13,7 +13,12 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://your-frontend-url.onrender.com",  # Your frontend URL
+        "http://localhost:8000",  # For local development
+        "http://127.0.0.1:8000",  # For local development
+    ],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
